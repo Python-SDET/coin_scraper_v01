@@ -26,21 +26,27 @@ morgan_link = dollar_header.find_all("a", href=re.compile("coinfacts/category/mo
 r = requests.get(baseurl + morgan_link[0]['href'])
 dollar_type_soup = BeautifulSoup(r.content, 'lxml')
 issue_links = dollar_type_soup.find_all("a", href=re.compile("coinfacts/coin/"))
-link_1878_8tf = issue_links[0]['href']
-arr_link_1878_8tf = link_1878_8tf.split(r'/')
-arr_link_1878_8tf.insert(len(arr_link_1878_8tf)-1, 'images')
-images_link_1878_8tf = '/'.join(arr_link_1878_8tf)
-r = requests.get(baseurl + images_link_1878_8tf)
-soup_images_1878_8tf = BeautifulSoup(r.content, 'lxml')
 
-images = soup_images_1878_8tf.find_all('img', class_='img-responsive lazy')
+for issue_link in issue_links:
 
-for image in images:
-    name = image['alt']
-    link = image['data-src']
-    arr_file_name = link.split(r'/')
-    file_name = name + arr_file_name[-1]
-    os.chdir(r'/home/dw/Pictures/pcgs/')
-    with open(file_name, 'wb') as f:
-        im = requests.get(link)
-        f.write(im.content)
+    link_href = issue_link['href']
+    arr_link_href = link_href.split(r'/')
+    arr_link_href.insert(len(arr_link_href)-1, 'images')
+    images_link = '/'.join(arr_link_href)
+    r = requests.get(baseurl + images_link)
+    soup_images = BeautifulSoup(r.content, 'lxml')
+
+    images = soup_images.find_all('a', href=re.compile(".jpg"))
+
+    for image in images:
+        grade = image['data-sub-html'][3:-4]
+        link = image['href']
+        responsive = image.find_all('img')
+        desc = responsive[0]['alt']
+        arr_file_name = link.split(r'/')
+        file_name = desc + '~' + grade + '~' + arr_file_name[-1]
+        file_name = file_name.replace(r'/', '-')
+        os.chdir(r'/home/dw/Pictures/pcgs/')
+        with open(file_name, 'wb') as f:
+            im = requests.get(link)
+            f.write(im.content)
